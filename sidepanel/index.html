@@ -1,0 +1,169 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Job Ledger</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600&family=Instrument+Serif:ital@0;1&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <div class="app">
+      <header class="top">
+        <div>
+          <p class="brand">Job Ledger</p>
+          <p class="tagline">Capture once. Recall later.</p>
+        </div>
+        <nav class="tabs" role="tablist">
+          <button type="button" class="tab is-active" data-view="capture" role="tab">Capture</button>
+          <button type="button" class="tab" data-view="pipeline" role="tab">Pipeline</button>
+          <button type="button" class="tab" data-view="profile" role="tab">Profile</button>
+        </nav>
+      </header>
+
+      <main>
+        <section id="view-capture" class="view is-active" aria-label="Capture application">
+          <form id="capture-form" class="form" autocomplete="off">
+            <input type="hidden" id="edit-id" />
+
+            <div class="row two">
+              <label>
+                <span>Company</span>
+                <input id="company" name="company" required placeholder="Acme Corp" />
+              </label>
+              <label>
+                <span>Role</span>
+                <input id="title" name="title" required placeholder="Principal Engineer" />
+              </label>
+            </div>
+
+            <label>
+              <span>Job URL</span>
+              <input id="url" name="url" type="url" placeholder="https://..." />
+            </label>
+
+            <div class="row three">
+              <label>
+                <span>Source</span>
+                <select id="source" name="source"></select>
+              </label>
+              <label>
+                <span>Status</span>
+                <select id="status" name="status"></select>
+              </label>
+              <label>
+                <span>Resume version</span>
+                <input id="resumeVersion" name="resumeVersion" placeholder="v3-platform" />
+              </label>
+            </div>
+
+            <div class="row three">
+              <label>
+                <span>Salary expectation</span>
+                <input id="salaryExpectation" name="salaryExpectation" placeholder="180000" />
+              </label>
+              <label>
+                <span>Currency</span>
+                <input id="currency" name="currency" placeholder="USD" maxlength="8" />
+              </label>
+              <label>
+                <span>Applied date</span>
+                <input id="appliedAt" name="appliedAt" type="date" />
+              </label>
+            </div>
+
+            <label>
+              <span>Notes</span>
+              <textarea id="notes" name="notes" rows="3" placeholder="Said 180k base, hybrid 3 days…"></textarea>
+            </label>
+
+            <p id="duplicate-warning" class="banner warn" hidden></p>
+            <p id="form-message" class="banner ok" hidden></p>
+
+            <div class="actions">
+              <button type="button" id="btn-fill-tab" class="btn ghost">Fill from tab</button>
+              <button type="button" id="btn-reset" class="btn ghost">Clear</button>
+              <button type="submit" id="btn-save" class="btn primary">Save application</button>
+            </div>
+          </form>
+        </section>
+
+        <section id="view-pipeline" class="view" aria-label="Pipeline" hidden>
+          <div class="toolbar">
+            <input id="search" type="search" placeholder="Search company, role, notes…" />
+            <select id="filter-status">
+              <option value="all">All statuses</option>
+            </select>
+            <button type="button" id="btn-export" class="btn ghost">Export CSV</button>
+          </div>
+          <p id="pipeline-empty" class="empty" hidden>No applications yet. Capture one from the Capture tab.</p>
+          <ul id="app-list" class="app-list"></ul>
+        </section>
+
+        <section id="view-profile" class="view" aria-label="Profile defaults" hidden>
+          <form id="profile-form" class="form" autocomplete="off">
+            <p class="hint">Defaults prefill every new save so you stop reinventing salary and resume labels.</p>
+            <div class="row two">
+              <label>
+                <span>Default salary</span>
+                <input id="profile-salary" name="defaultSalary" placeholder="180000" />
+              </label>
+              <label>
+                <span>Currency</span>
+                <input id="profile-currency" name="currency" placeholder="USD" maxlength="8" />
+              </label>
+            </div>
+            <label>
+              <span>Default resume version</span>
+              <input id="profile-resume" name="resumeVersion" placeholder="resume-principal-2026" />
+            </label>
+            <div class="row two">
+              <label>
+                <span>Notice period</span>
+                <input id="profile-notice" name="noticePeriod" placeholder="2 weeks" />
+              </label>
+              <label>
+                <span>Follow-up after (days)</span>
+                <input id="profile-followup" name="followUpDays" type="number" min="1" max="60" />
+              </label>
+            </div>
+            <label>
+              <span>Work authorization</span>
+              <input id="profile-workauth" name="workAuth" placeholder="US citizen / needs H-1B" />
+            </label>
+            <label>
+              <span>Preferred locations</span>
+              <input id="profile-locations" name="preferredLocations" placeholder="SF Bay Area, Remote US" />
+            </label>
+            <p id="profile-message" class="banner ok" hidden></p>
+            <div class="actions">
+              <button type="submit" class="btn primary">Save profile</button>
+            </div>
+          </form>
+        </section>
+      </main>
+    </div>
+
+    <dialog id="detail-dialog">
+      <form method="dialog" class="dialog-form" id="detail-form">
+        <header class="dialog-head">
+          <h2 id="detail-heading">Application</h2>
+          <button type="submit" value="cancel" class="icon-btn" aria-label="Close">×</button>
+        </header>
+        <div id="detail-body" class="dialog-body"></div>
+        <footer class="dialog-actions">
+          <button type="button" id="detail-delete" class="btn danger">Delete</button>
+          <button type="button" id="detail-edit" class="btn ghost">Edit in Capture</button>
+          <button type="submit" value="close" class="btn primary">Done</button>
+        </footer>
+      </form>
+    </dialog>
+
+    <script type="module" src="app.js"></script>
+  </body>
+</html>
